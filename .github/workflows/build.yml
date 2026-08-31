@@ -20,7 +20,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
@@ -1683,17 +1682,6 @@ jobs:
           echo "flutter_version=$FLUTTER_VERSION" >> $GITHUB_OUTPUT
           echo "Using Flutter $FLUTTER_VERSION"
 
-      - name: Cache Gradle & pub dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ~/.pub-cache
-          key: ${{ runner.os }}-deps-${{ hashFiles('flutter-project/pubspec.lock', 'flutter-project/android/**/*.gradle*') }}
-          restore-keys: |
-            ${{ runner.os }}-deps-
-
       - name: Setup Flutter SDK
         if: env.type == 'flutter'
         uses: subosito/flutter-action@v2
@@ -1701,19 +1689,6 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-
-      - name: Speed up Gradle (parallel + build cache + heap)
-        if: env.type == 'flutter'
-        shell: bash
-        run: |
-          flutter config --no-analytics
-          mkdir -p ~/.gradle
-          cat >> ~/.gradle/gradle.properties << 'EOF'
-          org.gradle.parallel=true
-          org.gradle.caching=true
-          org.gradle.configureondemand=true
-          org.gradle.jvmargs=-Xmx4g -XX:+UseParallelGC
-          EOF
 
       - name: Build Flutter APK
         if: env.type == 'flutter'
